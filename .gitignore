@@ -1,0 +1,8 @@
+# environments
+.env
+
+# tests
+*.out
+
+# builds
+/bin
