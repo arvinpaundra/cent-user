@@ -41,6 +41,26 @@ func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (en
 	return user, nil
 }
 
+func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.User, error) {
+	var user entity.User
+
+	err := r.db.WithContext(ctx).
+		Model(&model.User{}).
+		Where("id = ?", id).
+		First(&user).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.User{}, constant.ErrUserNotFound
+		}
+
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
+
 func (r UserReaderRepository) IsEmailExist(ctx context.Context, email string) (bool, error) {
 	var total int64
 

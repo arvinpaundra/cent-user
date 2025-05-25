@@ -11,7 +11,8 @@ import (
 	"github.com/arvinpaundra/cent/user/config"
 	"github.com/arvinpaundra/cent/user/core"
 	"github.com/arvinpaundra/cent/user/core/validator"
-	sqlpkg "github.com/arvinpaundra/cent/user/database"
+	"github.com/arvinpaundra/cent/user/database/nosqlpkg"
+	"github.com/arvinpaundra/cent/user/database/sqlpkg"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
@@ -24,11 +25,22 @@ var restCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config.LoadEnv(".", ".env", "env")
 
-		sqlpkg.NewConnection(sqlpkg.NewPostgres())
+		pgsql := sqlpkg.NewPostgres()
+
+		sqlpkg.NewConnection(pgsql)
+
+		rdb := nosqlpkg.NewRedisDB()
+
+		nosqlpkg.NewInMemoryConection(rdb)
 
 		g := gin.New()
 
-		route.New(g, sqlpkg.GetConnection(), validator.NewValidator())
+		route.NewRoutes(
+			g,
+			sqlpkg.GetConnection(),
+			nosqlpkg.GetInMemoryConnection(),
+			validator.NewValidator(),
+		).GatherRoutes()
 
 		srv := http.Server{
 			Addr:    fmt.Sprintf(":%s", port),
@@ -46,12 +58,10 @@ var restCmd = &cobra.Command{
 				return srv.Close()
 			},
 			"postgres": func(_ context.Context) error {
-				db, err := sqlpkg.GetConnection().DB()
-				if err != nil {
-					return err
-				}
-
-				return db.Close()
+				return pgsql.Close()
+			},
+			"redis": func(_ context.Context) error {
+				return rdb.Close()
 			},
 		})
 

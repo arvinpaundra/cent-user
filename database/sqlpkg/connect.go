@@ -14,6 +14,7 @@ var (
 
 type Connectible interface {
 	Connect() (*gorm.DB, error)
+	Close() error
 }
 
 func NewConnection(connect Connectible) {

@@ -58,6 +58,7 @@ func (cont *Controller) Login(c *gin.Context) {
 	handler := service.NewLoginHandler(
 		auth.NewUserReaderRepository(cont.db),
 		auth.NewSessionWriterRepository(cont.db),
+		auth.NewUserCacheRepository(cont.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 
@@ -74,4 +75,38 @@ func (cont *Controller) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, format.SuccessOK("success login", res))
+}
+
+func (cont *Controller) RefreshToken(c *gin.Context) {
+	var payload request.RefreshToken
+
+	_ = c.ShouldBindJSON(&payload)
+
+	verrs := cont.validator.Validate(payload)
+	if verrs != nil {
+		c.JSON(http.StatusBadRequest, format.BadRequest("invalid request body", verrs))
+		return
+	}
+
+	handler := service.NewRefreshTokenHandler(
+		auth.NewUserReaderRepository(cont.db),
+		auth.NewSessionReaderRepository(cont.db),
+		auth.NewSessionWriterRepository(cont.db),
+		auth.NewUserCacheRepository(cont.rdb),
+		token.NewJWT(viper.GetString("JWT_SECRET")),
+	)
+
+	res, err := handler.Handle(c, payload)
+	if err != nil {
+		switch err {
+		case constant.ErrUserNotFound, constant.ErrSessionNotFound, constant.ErrTokenInvalid:
+			c.JSON(http.StatusUnprocessableEntity, format.UnprocessableEntity(err.Error()))
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, format.InternalServerError())
+			return
+		}
+	}
+
+	c.JSON(http.StatusCreated, format.SuccessCreated("success refresh token", res))
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/arvinpaundra/cent/user/core/token"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
@@ -12,20 +13,23 @@ import (
 )
 
 type LoginHandler struct {
-	userReader         repository.UserReader
-	refreshTokenWriter repository.SessionWriter
-	tokenable          token.Tokenable
+	userReader    repository.UserReader
+	sessionWriter repository.SessionWriter
+	userCache     repository.UserCache
+	tokenable     token.Tokenable
 }
 
 func NewLoginHandler(
 	userReader repository.UserReader,
-	refreshTokenWriter repository.SessionWriter,
+	sessionWriter repository.SessionWriter,
+	userCache repository.UserCache,
 	tokenable token.Tokenable,
 ) LoginHandler {
 	return LoginHandler{
-		userReader:         userReader,
-		refreshTokenWriter: refreshTokenWriter,
-		tokenable:          tokenable,
+		userReader:    userReader,
+		sessionWriter: sessionWriter,
+		userCache:     userCache,
+		tokenable:     tokenable,
 	}
 }
 
@@ -55,10 +59,15 @@ func (s LoginHandler) Handle(ctx context.Context, payload request.Login) (respon
 		RefreshToken: &refreshToken,
 	}
 
-	err = s.refreshTokenWriter.Save(ctx, session)
+	err = s.sessionWriter.Save(ctx, session)
 	if err != nil {
 		return response.Login{}, err
 	}
+
+	identifierStr := strconv.Itoa(int(user.ID))
+	key := constant.UserCachedKey + identifierStr
+
+	_ = s.userCache.Set(ctx, key, user, constant.TTLFiveMinutes)
 
 	res := response.Login{
 		Email:        user.Email,
