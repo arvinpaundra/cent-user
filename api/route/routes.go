@@ -2,6 +2,7 @@ package route
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/arvinpaundra/cent/user/api/middleware"
 	"github.com/arvinpaundra/cent/user/api/route/auth"
@@ -9,6 +10,8 @@ import (
 	"github.com/arvinpaundra/cent/user/core/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -29,6 +32,8 @@ func NewRoutes(g *gin.Engine, db *gorm.DB, rdb *redis.Client, vld *validator.Val
 	g.Use(gin.LoggerWithConfig(gin.LoggerConfig{
 		SkipPaths: []string{"/metrics"},
 	}))
+
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	return &Routes{
 		g:    g,
