@@ -15,11 +15,17 @@ type Session struct {
 	DeletedAt    *time.Time
 }
 
+func (e *Session) SetDeletedAt() {
+	now := time.Now().UTC()
+	e.DeletedAt = &now
+}
+
 func (e *Session) ToModel() model.Session {
 	return model.Session{
 		ID:           e.ID,
 		UserId:       e.UserId,
 		AccessToken:  e.AccessToken,
 		RefreshToken: null.StringFromPtr(e.RefreshToken),
+		DeletedAt:    null.TimeFromPtr(e.DeletedAt),
 	}
 }

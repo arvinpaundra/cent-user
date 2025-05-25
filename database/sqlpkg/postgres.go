@@ -50,3 +50,17 @@ func (d *pgsql) Connect() (*gorm.DB, error) {
 
 	return db, nil
 }
+
+func (d *pgsql) Close() error {
+	sqldb, err := db.DB()
+	if err != nil {
+		return err
+	}
+
+	err = sqldb.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

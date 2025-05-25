@@ -8,7 +8,7 @@ import (
 
 type Tokenable interface {
 	Encode(identifier int64, duration time.Duration, validAfter time.Duration) (string, error)
-	Decode(str string) (Claims, error)
+	Decode(str string) (*Claims, error)
 }
 
 type Claims struct {

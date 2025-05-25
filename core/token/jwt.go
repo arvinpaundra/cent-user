@@ -6,6 +6,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var _ Tokenable = (*JWT)(nil)
+
 type JWT struct {
 	secret []byte
 }
@@ -31,8 +33,8 @@ func (t JWT) Encode(identifier int64, duration time.Duration, validAfter time.Du
 	return token.SignedString(t.secret)
 }
 
-func (t JWT) Decode(str string) (Claims, error) {
-	token, err := jwt.ParseWithClaims(str, Claims{}, func(tkn *jwt.Token) (any, error) {
+func (t JWT) Decode(str string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(str, &Claims{}, func(tkn *jwt.Token) (any, error) {
 		_, ok := tkn.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -42,16 +44,16 @@ func (t JWT) Decode(str string) (Claims, error) {
 	})
 
 	if err != nil {
-		return Claims{}, err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return Claims{}, jwt.ErrTokenUnverifiable
+		return nil, jwt.ErrTokenUnverifiable
 	}
 
-	claims, ok := token.Claims.(Claims)
+	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return Claims{}, jwt.ErrTokenInvalidClaims
+		return nil, jwt.ErrTokenInvalidClaims
 	}
 
 	return claims, nil

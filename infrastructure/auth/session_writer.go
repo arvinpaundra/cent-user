@@ -19,12 +19,28 @@ func NewSessionWriterRepository(db *gorm.DB) SessionWriterRepository {
 	return SessionWriterRepository{db: db}
 }
 
-func (r SessionWriterRepository) Save(ctx context.Context, refreshToken entity.Session) error {
-	refreshTokenModel := refreshToken.ToModel()
+func (r SessionWriterRepository) Save(ctx context.Context, session entity.Session) error {
+	sessionModel := session.ToModel()
 
 	err := r.db.WithContext(ctx).
 		Model(&model.Session{}).
-		Create(&refreshTokenModel).
+		Create(&sessionModel).
+		Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r SessionWriterRepository) Revoke(ctx context.Context, session entity.Session) error {
+	sessionModel := session.ToModel()
+
+	err := r.db.WithContext(ctx).
+		Model(&model.Session{}).
+		Where("id = ?", sessionModel.ID).
+		Updates(&sessionModel).
 		Error
 
 	if err != nil {
