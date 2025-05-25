@@ -24,6 +24,7 @@ func NewRoutes(g *gin.Engine, db *gorm.DB, rdb *redis.Client, vld *validator.Val
 	controller := resthttp.NewController(db, rdb, vld)
 
 	g.Use(middleware.Cors())
+	g.Use(middleware.Logger())
 	g.Use(gin.Recovery())
 	g.Use(gin.LoggerWithConfig(gin.LoggerConfig{
 		SkipPaths: []string{"/metrics"},
