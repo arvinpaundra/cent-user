@@ -22,12 +22,12 @@ func NewUserReaderRepository(db *gorm.DB) UserReaderRepository {
 }
 
 func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (entity.User, error) {
-	var user entity.User
+	var userModel model.User
 
 	err := r.db.WithContext(ctx).
 		Model(&model.User{}).
 		Where("email = ?", email).
-		Take(&user).
+		Take(&userModel).
 		Error
 
 	if err != nil {
@@ -38,16 +38,24 @@ func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (en
 		return entity.User{}, err
 	}
 
+	user := entity.User{
+		ID:       userModel.ID,
+		Email:    userModel.Email,
+		Password: userModel.Password.Ptr(),
+		Fullname: userModel.Fullname,
+		Image:    userModel.Image.Ptr(),
+	}
+
 	return user, nil
 }
 
 func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.User, error) {
-	var user entity.User
+	var userModel model.User
 
 	err := r.db.WithContext(ctx).
 		Model(&model.User{}).
 		Where("id = ?", id).
-		First(&user).
+		First(&userModel).
 		Error
 
 	if err != nil {
@@ -56,6 +64,14 @@ func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.Us
 		}
 
 		return entity.User{}, err
+	}
+
+	user := entity.User{
+		ID:       userModel.ID,
+		Email:    userModel.Email,
+		Password: userModel.Password.Ptr(),
+		Fullname: userModel.Fullname,
+		Image:    userModel.Image.Ptr(),
 	}
 
 	return user, nil
