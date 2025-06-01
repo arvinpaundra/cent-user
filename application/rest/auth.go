@@ -1,4 +1,4 @@
-package resthttp
+package rest
 
 import (
 	"net/http"
@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func (cont *Controller) Register(c *gin.Context) {
+func (cont Controller) Register(c *gin.Context) {
 	var payload request.Register
 
 	_ = c.ShouldBindJSON(&payload)
@@ -44,7 +44,7 @@ func (cont *Controller) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, format.SuccessCreated("success register", nil))
 }
 
-func (cont *Controller) Login(c *gin.Context) {
+func (cont Controller) Login(c *gin.Context) {
 	var payload request.Login
 
 	_ = c.ShouldBindJSON(&payload)
@@ -77,7 +77,7 @@ func (cont *Controller) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, format.SuccessOK("success login", res))
 }
 
-func (cont *Controller) RefreshToken(c *gin.Context) {
+func (cont Controller) RefreshToken(c *gin.Context) {
 	var payload request.RefreshToken
 
 	_ = c.ShouldBindJSON(&payload)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/arvinpaundra/cent/user/api/middleware"
 	"github.com/arvinpaundra/cent/user/api/route/auth"
-	"github.com/arvinpaundra/cent/user/application/resthttp"
+	restapp "github.com/arvinpaundra/cent/user/application/rest"
 	"github.com/arvinpaundra/cent/user/core/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,11 +17,11 @@ type Routes struct {
 	db   *gorm.DB
 	rdb  *redis.Client
 	vld  *validator.Validator
-	cont *resthttp.Controller
+	cont restapp.Controller
 }
 
 func NewRoutes(g *gin.Engine, db *gorm.DB, rdb *redis.Client, vld *validator.Validator) *Routes {
-	controller := resthttp.NewController(db, rdb, vld)
+	controller := restapp.NewController(db, rdb, vld)
 
 	g.Use(middleware.Cors())
 	g.Use(gin.Recovery())
@@ -38,21 +38,15 @@ func NewRoutes(g *gin.Engine, db *gorm.DB, rdb *redis.Client, vld *validator.Val
 	}
 }
 
-func (r *Routes) GatherRoutes() {
-	r.public()
-
-	r.private()
-
-	r.internal()
-}
-
-func (r *Routes) public() {
+func (r *Routes) WithPublic() *Routes {
 	v1 := r.g.Group("/api/v1")
 
 	auth.PublicRoute(v1, r.cont)
+
+	return r
 }
 
-func (r *Routes) private() {
+func (r *Routes) WithPrivate() *Routes {
 	v1 := r.g.Group("/api/v1")
 
 	authentication := middleware.NewAuthentication(r.rdb, r.db)
@@ -62,7 +56,10 @@ func (r *Routes) private() {
 	test.GET("", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	return r
 }
 
-func (r *Routes) internal() {
+func (r *Routes) WithInternal() *Routes {
+	return r
 }
