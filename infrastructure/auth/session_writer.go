@@ -6,6 +6,7 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 	"github.com/arvinpaundra/cent/user/model"
+	"github.com/guregu/null/v6"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,19 @@ func NewSessionWriterRepository(db *gorm.DB) SessionWriterRepository {
 }
 
 func (r SessionWriterRepository) Save(ctx context.Context, session entity.Session) error {
-	sessionModel := session.ToModel()
+	if session.IsNew() {
+		return r.insert(ctx, session)
+	}
+
+	return nil
+}
+
+func (r SessionWriterRepository) insert(ctx context.Context, session entity.Session) error {
+	sessionModel := model.Session{
+		UserId:       session.UserId,
+		AccessToken:  session.AccessToken,
+		RefreshToken: null.StringFromPtr(session.RefreshToken),
+	}
 
 	err := r.db.WithContext(ctx).
 		Model(&model.Session{}).
@@ -35,7 +48,12 @@ func (r SessionWriterRepository) Save(ctx context.Context, session entity.Sessio
 }
 
 func (r SessionWriterRepository) Revoke(ctx context.Context, session entity.Session) error {
-	sessionModel := session.ToModel()
+	sessionModel := model.Session{
+		UserId:       session.UserId,
+		AccessToken:  session.AccessToken,
+		RefreshToken: null.StringFromPtr(session.RefreshToken),
+		DeletedAt:    null.TimeFromPtr(session.DeletedAt),
+	}
 
 	err := r.db.WithContext(ctx).
 		Model(&model.Session{}).

@@ -12,6 +12,7 @@ type User struct {
 	Password  null.String
 	Fullname  string
 	Image     null.String
+	Slug      null.String
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt null.Time

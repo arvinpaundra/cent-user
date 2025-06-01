@@ -1,11 +1,6 @@
 package entity
 
-import (
-	"time"
-
-	"github.com/arvinpaundra/cent/user/model"
-	"github.com/guregu/null/v6"
-)
+import "time"
 
 type Session struct {
 	ID           int64
@@ -15,17 +10,11 @@ type Session struct {
 	DeletedAt    *time.Time
 }
 
+func (e *Session) IsNew() bool {
+	return e.ID <= 0
+}
+
 func (e *Session) SetDeletedAt() {
 	now := time.Now().UTC()
 	e.DeletedAt = &now
-}
-
-func (e *Session) ToModel() model.Session {
-	return model.Session{
-		ID:           e.ID,
-		UserId:       e.UserId,
-		AccessToken:  e.AccessToken,
-		RefreshToken: null.StringFromPtr(e.RefreshToken),
-		DeletedAt:    null.TimeFromPtr(e.DeletedAt),
-	}
 }

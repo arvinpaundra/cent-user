@@ -6,6 +6,7 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 	"github.com/arvinpaundra/cent/user/model"
+	"github.com/guregu/null/v6"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,21 @@ func NewUserWriterRepository(db *gorm.DB) UserWriterRepository {
 }
 
 func (r UserWriterRepository) Save(ctx context.Context, user entity.User) error {
-	userModel := user.ToModel()
+	if user.IsNew() {
+		return r.insert(ctx, user)
+	}
+
+	return nil
+}
+
+func (r UserWriterRepository) insert(ctx context.Context, user entity.User) error {
+	userModel := model.User{
+		Email:    user.Email,
+		Password: null.StringFromPtr(user.Password),
+		Fullname: user.Fullname,
+		Image:    null.StringFromPtr(user.Image),
+		Slug:     null.StringFromPtr(user.Slug),
+	}
 
 	err := r.db.WithContext(ctx).
 		Model(&model.User{}).
