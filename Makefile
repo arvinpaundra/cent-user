@@ -1,5 +1,6 @@
 APP_NAME := cent-user
 REST_PORT ?= 8080
+GRPC_PORT ?= 8083
 
 DB_URL ?= postgres://root:root@localhost:5432/cent_user?sslmode=disable
 MIGRATION_PATH := ./migrations
@@ -11,6 +12,10 @@ build:
 rest:
 	@echo "Running REST on $(APP_NAME)" 
 	go run main.go rest -p $(REST_PORT)
+
+grpc:
+	@echo "Running gRPC on $(APP_NAME)"
+	go run main.go grpc -p $(GRPC_PORT)
 
 test:
 	@echo "Running tests on $(APP_NAME)"

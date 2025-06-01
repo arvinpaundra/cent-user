@@ -31,7 +31,7 @@ func (m Authentication) Authenticate() gin.HandlerFunc {
 		bearerToken := c.GetHeader("Authorization")
 
 		if bearerToken == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, format.Unauthorized("unauthenticated user"))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, format.Unauthorized("bearer token is missing"))
 			return
 		}
 

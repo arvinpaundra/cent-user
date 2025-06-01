@@ -35,12 +35,10 @@ var restCmd = &cobra.Command{
 
 		g := gin.New()
 
-		route.NewRoutes(
-			g,
-			sqlpkg.GetConnection(),
-			nosqlpkg.GetInMemoryConnection(),
-			validator.NewValidator(),
-		).GatherRoutes()
+		_ = route.NewRoutes(g, sqlpkg.GetConnection(), nosqlpkg.GetInMemoryConnection(), validator.NewValidator()).
+			WithPublic().
+			WithPrivate().
+			WithInternal()
 
 		srv := http.Server{
 			Addr:    fmt.Sprintf(":%s", port),
@@ -70,6 +68,6 @@ var restCmd = &cobra.Command{
 }
 
 func init() {
-	restCmd.Flags().StringVarP(&port, "port", "p", "8080", "bind server to port. default: 8080")
+	restCmd.Flags().StringVarP(&port, "port", "p", "8080", "bind server to port")
 	rootCmd.AddCommand(restCmd)
 }
