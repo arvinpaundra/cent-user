@@ -30,13 +30,11 @@ migrateadd:
 	migrate create -ext sql -dir $(MIGRATION_PATH) $(NAME)
 
 migrateup:
-	@echo "Execute migrate up"
+	@echo "Executing migrate up"
 	migrate -path $(MIGRATION_PATH) -database "$(DB_URL)" -verbose up
 
 migratedown:
-	@echo "Execute migrate down"
+	@echo "Executing migrate down"
 	migrate -path $(MIGRATION_PATH) -database "$(DB_URL)" -verbose down
 
-migratereset:
-	@echo "Execute reset all migrations"
-	migrate -path $(MIGRATION_PATH) -database "$(DB_URL)" -verbose drop -f
+migraterefresh: migratedown migrateup

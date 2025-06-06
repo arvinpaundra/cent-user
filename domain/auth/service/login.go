@@ -59,7 +59,7 @@ func (s LoginHandler) Handle(ctx context.Context, payload request.Login) (respon
 		RefreshToken: &refreshToken,
 	}
 
-	err = s.sessionWriter.Save(ctx, session)
+	err = s.sessionWriter.Save(ctx, &session)
 	if err != nil {
 		return response.Login{}, err
 	}

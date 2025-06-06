@@ -6,6 +6,6 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 )
 
-type UserWriter interface {
-	Save(ctx context.Context, user *entity.User) error
+type OutboxWriter interface {
+	Save(ctx context.Context, outbox *entity.Outbox) error
 }
