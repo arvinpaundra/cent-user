@@ -7,5 +7,5 @@ import (
 )
 
 type SessionReader interface {
-	FindByRefreshToken(ctx context.Context, userId int64, refreshToken string) (entity.Session, error)
+	FindByRefreshToken(ctx context.Context, userId int64, refreshToken string) (*entity.Session, error)
 }

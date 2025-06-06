@@ -22,21 +22,21 @@ func NewUserCacheRepository(rdb *redis.Client) UserCacheRepository {
 	return UserCacheRepository{rdb: rdb}
 }
 
-func (r UserCacheRepository) Get(ctx context.Context, key string) (entity.User, error) {
+func (r UserCacheRepository) Get(ctx context.Context, key string) (*entity.User, error) {
 	var user entity.User
 
 	err := r.rdb.Get(ctx, key).Scan(&user)
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return entity.User{}, constant.ErrUserNotFound
+			return nil, constant.ErrUserNotFound
 		}
-		return entity.User{}, err
+		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func (r UserCacheRepository) Set(ctx context.Context, key string, value entity.User, ttl time.Duration) error {
+func (r UserCacheRepository) Set(ctx context.Context, key string, value *entity.User, ttl time.Duration) error {
 	valb, _ := json.Marshal(value)
 
 	err := r.rdb.Set(ctx, key, valb, ttl).Err()

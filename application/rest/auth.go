@@ -27,6 +27,8 @@ func (cont Controller) Register(c *gin.Context) {
 	handler := service.NewRegisterHandler(
 		auth.NewUserReaderRepository(cont.db),
 		auth.NewUserWriterRepository(cont.db),
+		auth.NewOutboxWriterRepository(cont.db),
+		auth.NewUnitOfWork(cont.db),
 	)
 
 	err := handler.Handle(c, payload)
@@ -92,6 +94,7 @@ func (cont Controller) RefreshToken(c *gin.Context) {
 		auth.NewUserReaderRepository(cont.db),
 		auth.NewSessionReaderRepository(cont.db),
 		auth.NewSessionWriterRepository(cont.db),
+		auth.NewUnitOfWork(cont.db),
 		auth.NewUserCacheRepository(cont.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)

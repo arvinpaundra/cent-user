@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
 	"github.com/arvinpaundra/cent/user/domain/auth/dto/request"
@@ -10,17 +11,23 @@ import (
 )
 
 type RegisterHandler struct {
-	userReader repository.UserReader
-	userWriter repository.UserWriter
+	userReader   repository.UserReader
+	userWriter   repository.UserWriter
+	outboxWriter repository.OutboxWriter
+	unitOfWork   repository.UnitOfWork
 }
 
 func NewRegisterHandler(
 	userReader repository.UserReader,
 	userWriter repository.UserWriter,
+	outboxWriter repository.OutboxWriter,
+	unitOfWork repository.UnitOfWork,
 ) RegisterHandler {
 	return RegisterHandler{
-		userReader: userReader,
-		userWriter: userWriter,
+		userReader:   userReader,
+		userWriter:   userWriter,
+		outboxWriter: outboxWriter,
+		unitOfWork:   unitOfWork,
 	}
 }
 
@@ -44,9 +51,74 @@ func (s RegisterHandler) Handle(ctx context.Context, payload request.Register) e
 		return err
 	}
 
-	err = s.userWriter.Save(ctx, user)
+	tx, err := s.unitOfWork.Begin()
 	if err != nil {
 		return err
+	}
+
+	err = tx.UserWriter().Save(ctx, &user)
+	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return uowErr
+		}
+
+		return err
+	}
+
+	err = user.GenerateSlug()
+	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return uowErr
+		}
+
+		return err
+	}
+
+	user.MarkToBeUpdated()
+
+	err = tx.UserWriter().Save(ctx, &user)
+	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return uowErr
+		}
+
+		return err
+	}
+
+	outboxPayload := struct {
+		UserId   int64   `json:"user_id"`
+		UserSlug *string `json:"user_slug"`
+	}{
+		UserId:   user.ID,
+		UserSlug: user.Slug,
+	}
+
+	payloadBytes, err := json.Marshal(outboxPayload)
+	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return uowErr
+		}
+
+		return err
+	}
+
+	outbox := entity.Outbox{
+		Event:   constant.OutboxEventUserRegistered,
+		Status:  constant.OutboxStatusPending,
+		Payload: payloadBytes,
+	}
+
+	err = tx.OutboxWriter().Save(ctx, &outbox)
+	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return uowErr
+		}
+
+		return err
+	}
+
+	if uowErr := tx.Commit(); uowErr != nil {
+		return uowErr
 	}
 
 	return nil

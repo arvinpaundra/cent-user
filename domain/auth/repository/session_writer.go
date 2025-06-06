@@ -7,6 +7,6 @@ import (
 )
 
 type SessionWriter interface {
-	Save(ctx context.Context, session entity.Session) error
-	Revoke(ctx context.Context, session entity.Session) error
+	Save(ctx context.Context, session *entity.Session) error
+	Revoke(ctx context.Context, session *entity.Session) error
 }

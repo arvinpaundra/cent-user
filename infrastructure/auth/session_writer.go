@@ -20,7 +20,7 @@ func NewSessionWriterRepository(db *gorm.DB) SessionWriterRepository {
 	return SessionWriterRepository{db: db}
 }
 
-func (r SessionWriterRepository) Save(ctx context.Context, session entity.Session) error {
+func (r SessionWriterRepository) Save(ctx context.Context, session *entity.Session) error {
 	if session.IsNew() {
 		return r.insert(ctx, session)
 	}
@@ -28,7 +28,7 @@ func (r SessionWriterRepository) Save(ctx context.Context, session entity.Sessio
 	return nil
 }
 
-func (r SessionWriterRepository) insert(ctx context.Context, session entity.Session) error {
+func (r SessionWriterRepository) insert(ctx context.Context, session *entity.Session) error {
 	sessionModel := model.Session{
 		UserId:       session.UserId,
 		AccessToken:  session.AccessToken,
@@ -47,7 +47,7 @@ func (r SessionWriterRepository) insert(ctx context.Context, session entity.Sess
 	return nil
 }
 
-func (r SessionWriterRepository) Revoke(ctx context.Context, session entity.Session) error {
+func (r SessionWriterRepository) Revoke(ctx context.Context, session *entity.Session) error {
 	sessionModel := model.Session{
 		UserId:       session.UserId,
 		AccessToken:  session.AccessToken,

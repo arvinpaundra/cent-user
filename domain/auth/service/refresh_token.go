@@ -16,6 +16,7 @@ type RefreshTokenHandler struct {
 	userReader    repository.UserReader
 	sessionReader repository.SessionReader
 	sessionWriter repository.SessionWriter
+	unitOfWork    repository.UnitOfWork
 	userCache     repository.UserCache
 	tokenable     token.Tokenable
 }
@@ -24,6 +25,7 @@ func NewRefreshTokenHandler(
 	userReader repository.UserReader,
 	sessionReader repository.SessionReader,
 	sessionWriter repository.SessionWriter,
+	unitOfWork repository.UnitOfWork,
 	userCache repository.UserCache,
 	tokenable token.Tokenable,
 ) RefreshTokenHandler {
@@ -31,6 +33,7 @@ func NewRefreshTokenHandler(
 		userReader:    userReader,
 		sessionReader: sessionReader,
 		sessionWriter: sessionWriter,
+		unitOfWork:    unitOfWork,
 		userCache:     userCache,
 		tokenable:     tokenable,
 	}
@@ -62,14 +65,23 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 		return response.RefreshToken{}, err
 	}
 
+	tx, err := s.unitOfWork.Begin()
+	if err != nil {
+		return response.RefreshToken{}, nil
+	}
+
 	newSession := entity.Session{
 		UserId:       user.ID,
 		AccessToken:  accessToken,
 		RefreshToken: &refreshToken,
 	}
 
-	err = s.sessionWriter.Save(ctx, newSession)
+	err = tx.SessionWriter().Save(ctx, &newSession)
 	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return response.RefreshToken{}, uowErr
+		}
+
 		return response.RefreshToken{}, err
 	}
 
@@ -77,6 +89,10 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 
 	err = s.sessionWriter.Revoke(ctx, session)
 	if err != nil {
+		if uowErr := tx.Rollback(); uowErr != nil {
+			return response.RefreshToken{}, uowErr
+		}
+
 		return response.RefreshToken{}, err
 	}
 
@@ -84,6 +100,10 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 	key := constant.UserCachedKey + identifierStr
 
 	_ = s.userCache.Set(ctx, key, user, constant.TTLFiveMinutes)
+
+	if uowErr := tx.Commit(); uowErr != nil {
+		return response.RefreshToken{}, uowErr
+	}
 
 	res := response.RefreshToken{
 		AccessToken:  accessToken,

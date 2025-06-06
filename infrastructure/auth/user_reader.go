@@ -21,7 +21,7 @@ func NewUserReaderRepository(db *gorm.DB) UserReaderRepository {
 	return UserReaderRepository{db: db}
 }
 
-func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (entity.User, error) {
+func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var userModel model.User
 
 	err := r.db.WithContext(ctx).
@@ -32,10 +32,10 @@ func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (en
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.User{}, constant.ErrUserNotFound
+			return nil, constant.ErrUserNotFound
 		}
 
-		return entity.User{}, err
+		return nil, err
 	}
 
 	user := entity.User{
@@ -46,10 +46,10 @@ func (r UserReaderRepository) FindByEmail(ctx context.Context, email string) (en
 		Image:    userModel.Image.Ptr(),
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.User, error) {
+func (r UserReaderRepository) FindById(ctx context.Context, id int64) (*entity.User, error) {
 	var userModel model.User
 
 	err := r.db.WithContext(ctx).
@@ -60,10 +60,10 @@ func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.Us
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.User{}, constant.ErrUserNotFound
+			return nil, constant.ErrUserNotFound
 		}
 
-		return entity.User{}, err
+		return nil, err
 	}
 
 	user := entity.User{
@@ -74,7 +74,7 @@ func (r UserReaderRepository) FindById(ctx context.Context, id int64) (entity.Us
 		Image:    userModel.Image.Ptr(),
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (r UserReaderRepository) IsEmailExist(ctx context.Context, email string) (bool, error) {

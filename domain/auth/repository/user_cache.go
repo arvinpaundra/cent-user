@@ -8,7 +8,7 @@ import (
 )
 
 type UserCache interface {
-	Get(ctx context.Context, key string) (entity.User, error)
-	Set(ctx context.Context, key string, value entity.User, ttl time.Duration) error
+	Get(ctx context.Context, key string) (*entity.User, error)
+	Set(ctx context.Context, key string, value *entity.User, ttl time.Duration) error
 	Del(ctx context.Context, key string) error
 }

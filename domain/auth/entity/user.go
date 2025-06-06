@@ -3,11 +3,14 @@ package entity
 import (
 	"time"
 
+	"github.com/arvinpaundra/cent/user/core/trait"
 	"github.com/sqids/sqids-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
+	trait.Updateable
+
 	ID        int64      `json:"id" redis:"id"`
 	Email     string     `json:"email" redis:"email"`
 	Password  *string    `json:"password" redis:"-"`
@@ -64,5 +67,5 @@ func (e *User) GenerateSlug() error {
 }
 
 func (e *User) IsEmpty() bool {
-	return *e == (User{})
+	return e == nil
 }

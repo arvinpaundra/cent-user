@@ -21,7 +21,7 @@ func NewSessionReaderRepository(db *gorm.DB) SessionReaderRepository {
 	return SessionReaderRepository{db: db}
 }
 
-func (r SessionReaderRepository) FindByRefreshToken(ctx context.Context, userId int64, refreshToken string) (entity.Session, error) {
+func (r SessionReaderRepository) FindByRefreshToken(ctx context.Context, userId int64, refreshToken string) (*entity.Session, error) {
 	var sessionModel model.Session
 
 	err := r.db.WithContext(ctx).
@@ -33,10 +33,10 @@ func (r SessionReaderRepository) FindByRefreshToken(ctx context.Context, userId 
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Session{}, constant.ErrSessionNotFound
+			return nil, constant.ErrSessionNotFound
 		}
 
-		return entity.Session{}, err
+		return nil, err
 	}
 
 	session := entity.Session{
@@ -46,5 +46,5 @@ func (r SessionReaderRepository) FindByRefreshToken(ctx context.Context, userId 
 		RefreshToken: sessionModel.RefreshToken.Ptr(),
 	}
 
-	return session, nil
+	return &session, nil
 }
