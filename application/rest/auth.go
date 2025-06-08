@@ -6,15 +6,15 @@ import (
 	"github.com/arvinpaundra/cent/user/core/format"
 	"github.com/arvinpaundra/cent/user/core/token"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/request"
+	authcmd"github.com/arvinpaundra/cent/user/application/command/auth"
 	"github.com/arvinpaundra/cent/user/domain/auth/service"
-	"github.com/arvinpaundra/cent/user/infrastructure/auth"
+	authinfra"github.com/arvinpaundra/cent/user/infrastructure/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
 func (cont Controller) Register(c *gin.Context) {
-	var payload request.Register
+	var payload authcmd.Register
 
 	_ = c.ShouldBindJSON(&payload)
 
@@ -25,10 +25,10 @@ func (cont Controller) Register(c *gin.Context) {
 	}
 
 	handler := service.NewRegisterHandler(
-		auth.NewUserReaderRepository(cont.db),
-		auth.NewUserWriterRepository(cont.db),
-		auth.NewOutboxWriterRepository(cont.db),
-		auth.NewUnitOfWork(cont.db),
+		authinfra.NewUserReaderRepository(cont.db),
+		authinfra.NewUserWriterRepository(cont.db),
+		authinfra.NewOutboxWriterRepository(cont.db),
+		authinfra.NewUnitOfWork(cont.db),
 	)
 
 	err := handler.Handle(c, payload)
@@ -47,7 +47,7 @@ func (cont Controller) Register(c *gin.Context) {
 }
 
 func (cont Controller) Login(c *gin.Context) {
-	var payload request.Login
+	var payload authcmd.Login
 
 	_ = c.ShouldBindJSON(&payload)
 
@@ -58,9 +58,9 @@ func (cont Controller) Login(c *gin.Context) {
 	}
 
 	handler := service.NewLoginHandler(
-		auth.NewUserReaderRepository(cont.db),
-		auth.NewSessionWriterRepository(cont.db),
-		auth.NewUserCacheRepository(cont.rdb),
+		authinfra.NewUserReaderRepository(cont.db),
+		authinfra.NewSessionWriterRepository(cont.db),
+		authinfra.NewUserCacheRepository(cont.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 
@@ -80,7 +80,7 @@ func (cont Controller) Login(c *gin.Context) {
 }
 
 func (cont Controller) RefreshToken(c *gin.Context) {
-	var payload request.RefreshToken
+	var payload authcmd.RefreshToken
 
 	_ = c.ShouldBindJSON(&payload)
 
@@ -91,11 +91,11 @@ func (cont Controller) RefreshToken(c *gin.Context) {
 	}
 
 	handler := service.NewRefreshTokenHandler(
-		auth.NewUserReaderRepository(cont.db),
-		auth.NewSessionReaderRepository(cont.db),
-		auth.NewSessionWriterRepository(cont.db),
-		auth.NewUnitOfWork(cont.db),
-		auth.NewUserCacheRepository(cont.rdb),
+		authinfra.NewUserReaderRepository(cont.db),
+		authinfra.NewSessionReaderRepository(cont.db),
+		authinfra.NewSessionWriterRepository(cont.db),
+		authinfra.NewUnitOfWork(cont.db),
+		authinfra.NewUserCacheRepository(cont.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 

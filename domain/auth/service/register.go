@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	authcmd "github.com/arvinpaundra/cent/user/application/command/auth"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/request"
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
@@ -31,7 +31,7 @@ func NewRegisterHandler(
 	}
 }
 
-func (s RegisterHandler) Handle(ctx context.Context, payload request.Register) error {
+func (s RegisterHandler) Handle(ctx context.Context, payload authcmd.Register) error {
 	isExist, err := s.userReader.IsEmailExist(ctx, payload.Email)
 	if err != nil {
 		return err

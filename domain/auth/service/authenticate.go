@@ -6,7 +6,7 @@ import (
 
 	"github.com/arvinpaundra/cent/user/core/token"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/response"
+	authres"github.com/arvinpaundra/cent/user/application/response/auth"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
 
@@ -28,24 +28,24 @@ func NewAuthenticateHandler(
 	}
 }
 
-func (s AuthenticateHandler) Handle(ctx context.Context, token string) (response.UserAuthenticated, error) {
+func (s AuthenticateHandler) Handle(ctx context.Context, token string) (authres.UserAuthenticated, error) {
 	claims, err := s.tokenable.Decode(token)
 	if err != nil {
-		return response.UserAuthenticated{}, err
+		return authres.UserAuthenticated{}, err
 	}
 
-	var res response.UserAuthenticated
+	var res authres.UserAuthenticated
 
 	identifierStr := strconv.Itoa(int(claims.Identifier))
 	key := constant.UserCachedKey + identifierStr
 
 	userCached, err := s.userCache.Get(ctx, key)
 	if err != nil && err != constant.ErrUserNotFound {
-		return response.UserAuthenticated{}, nil
+		return authres.UserAuthenticated{}, nil
 	}
 
 	if !userCached.IsEmpty() {
-		res = response.UserAuthenticated{
+		res = authres.UserAuthenticated{
 			UserID: userCached.ID,
 		}
 
@@ -54,12 +54,12 @@ func (s AuthenticateHandler) Handle(ctx context.Context, token string) (response
 
 	user, err := s.userReader.FindById(ctx, claims.Identifier)
 	if err != nil {
-		return response.UserAuthenticated{}, err
+		return authres.UserAuthenticated{}, err
 	}
 
 	_ = s.userCache.Set(ctx, key, user, constant.TTLFiveMinutes)
 
-	res = response.UserAuthenticated{
+	res = authres.UserAuthenticated{
 		UserID: user.ID,
 	}
 

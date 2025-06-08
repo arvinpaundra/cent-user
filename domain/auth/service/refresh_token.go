@@ -6,8 +6,8 @@ import (
 
 	"github.com/arvinpaundra/cent/user/core/token"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/request"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/response"
+	authcmd"github.com/arvinpaundra/cent/user/application/command/auth"
+	authres"github.com/arvinpaundra/cent/user/application/response/auth"
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
@@ -39,35 +39,35 @@ func NewRefreshTokenHandler(
 	}
 }
 
-func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.RefreshToken) (response.RefreshToken, error) {
+func (s RefreshTokenHandler) Handle(ctx context.Context, payload authcmd.RefreshToken) (authres.RefreshToken, error) {
 	claims, err := s.tokenable.Decode(payload.RefreshToken)
 	if err != nil {
-		return response.RefreshToken{}, constant.ErrTokenInvalid
+		return authres.RefreshToken{}, constant.ErrTokenInvalid
 	}
 
 	user, err := s.userReader.FindById(ctx, claims.Identifier)
 	if err != nil {
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	session, err := s.sessionReader.FindByRefreshToken(ctx, user.ID, payload.RefreshToken)
 	if err != nil {
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	accessToken, err := s.tokenable.Encode(session.UserId, constant.TokenValidFifteenMinutes, constant.TokenValidImmediately)
 	if err != nil {
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	refreshToken, err := s.tokenable.Encode(session.UserId, constant.TokenValidSevenDays, constant.TokenValidAfterFifteenMinutes)
 	if err != nil {
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	tx, err := s.unitOfWork.Begin()
 	if err != nil {
-		return response.RefreshToken{}, nil
+		return authres.RefreshToken{}, nil
 	}
 
 	newSession := entity.Session{
@@ -79,10 +79,10 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 	err = tx.SessionWriter().Save(ctx, &newSession)
 	if err != nil {
 		if uowErr := tx.Rollback(); uowErr != nil {
-			return response.RefreshToken{}, uowErr
+			return authres.RefreshToken{}, uowErr
 		}
 
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	session.SetDeletedAt()
@@ -90,10 +90,10 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 	err = s.sessionWriter.Revoke(ctx, session)
 	if err != nil {
 		if uowErr := tx.Rollback(); uowErr != nil {
-			return response.RefreshToken{}, uowErr
+			return authres.RefreshToken{}, uowErr
 		}
 
-		return response.RefreshToken{}, err
+		return authres.RefreshToken{}, err
 	}
 
 	identifierStr := strconv.Itoa(int(claims.Identifier))
@@ -102,10 +102,10 @@ func (s RefreshTokenHandler) Handle(ctx context.Context, payload request.Refresh
 	_ = s.userCache.Set(ctx, key, user, constant.TTLFiveMinutes)
 
 	if uowErr := tx.Commit(); uowErr != nil {
-		return response.RefreshToken{}, uowErr
+		return authres.RefreshToken{}, uowErr
 	}
 
-	res := response.RefreshToken{
+	res := authres.RefreshToken{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
