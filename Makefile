@@ -17,6 +17,10 @@ grpc:
 	@echo "Running gRPC on $(APP_NAME)"
 	go run main.go grpc -p $(GRPC_PORT)
 
+poller:
+	@echo "Running outbox poller"
+	go run main.go poller
+
 test:
 	@echo "Running tests on $(APP_NAME)"
 	go test -v -cover ./...

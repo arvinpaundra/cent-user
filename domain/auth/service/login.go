@@ -6,8 +6,8 @@ import (
 
 	"github.com/arvinpaundra/cent/user/core/token"
 	"github.com/arvinpaundra/cent/user/domain/auth/constant"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/request"
-	"github.com/arvinpaundra/cent/user/domain/auth/dto/response"
+	authcmd"github.com/arvinpaundra/cent/user/application/command/auth"
+	authres"github.com/arvinpaundra/cent/user/application/response/auth"
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
@@ -33,24 +33,24 @@ func NewLoginHandler(
 	}
 }
 
-func (s LoginHandler) Handle(ctx context.Context, payload request.Login) (response.Login, error) {
+func (s LoginHandler) Handle(ctx context.Context, payload authcmd.Login) (authres.Login, error) {
 	user, err := s.userReader.FindByEmail(ctx, payload.Email)
 	if err != nil {
-		return response.Login{}, err
+		return authres.Login{}, err
 	}
 
 	if !user.ComparePassword(payload.Password) {
-		return response.Login{}, constant.ErrWrongEmailOrPassword
+		return authres.Login{}, constant.ErrWrongEmailOrPassword
 	}
 
 	accessToken, err := s.tokenable.Encode(user.ID, constant.TokenValidFifteenMinutes, constant.TokenValidImmediately)
 	if err != nil {
-		return response.Login{}, err
+		return authres.Login{}, err
 	}
 
 	refreshToken, err := s.tokenable.Encode(user.ID, constant.TokenValidSevenDays, constant.TokenValidAfterFifteenMinutes)
 	if err != nil {
-		return response.Login{}, err
+		return authres.Login{}, err
 	}
 
 	session := entity.Session{
@@ -61,7 +61,7 @@ func (s LoginHandler) Handle(ctx context.Context, payload request.Login) (respon
 
 	err = s.sessionWriter.Save(ctx, &session)
 	if err != nil {
-		return response.Login{}, err
+		return authres.Login{}, err
 	}
 
 	identifierStr := strconv.Itoa(int(user.ID))
@@ -69,7 +69,7 @@ func (s LoginHandler) Handle(ctx context.Context, payload request.Login) (respon
 
 	_ = s.userCache.Set(ctx, key, user, constant.TTLFiveMinutes)
 
-	res := response.Login{
+	res := authres.Login{
 		Email:        user.Email,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
