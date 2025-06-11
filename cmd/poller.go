@@ -24,7 +24,7 @@ var pollerCmd = &cobra.Command{
 
 		sqlpkg.NewConnection(pgsql)
 
-		p := poller.NewPoller().SetBaseDelay(5 * time.Second).SetMaxDelay(3 * time.Hour)
+		p := poller.NewPoller().SetBaseDelay(5 * time.Second).SetMaxDelay(5 * time.Minute)
 
 		nc := messaging.NewNats(viper.GetString("NATS_URL"))
 

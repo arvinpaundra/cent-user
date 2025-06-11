@@ -25,7 +25,7 @@ type Poller struct {
 func NewPoller() *Poller {
 	return &Poller{
 		BaseDelay: 5 * time.Second,
-		MaxDelay:  60 * time.Second,
+		MaxDelay:  5 * time.Second,
 		Jitter:    false,
 		stop:      make(chan struct{}, 1),
 	}
