@@ -7,7 +7,7 @@ import (
 	"github.com/arvinpaundra/cent/user/core/validator"
 	"github.com/arvinpaundra/cent/user/domain/auth/service"
 	authinfra "github.com/arvinpaundra/cent/user/infrastructure/auth"
-	"github.com/arvinpaundra/centpb/gen/go/auth/v1"
+	authpb "github.com/arvinpaundra/centpb/gen/go/auth/v1"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -18,7 +18,7 @@ type AuthService struct {
 	rdb *redis.Client
 	vld *validator.Validator
 
-	auth.UnimplementedAuthenticateServiceServer
+	authpb.UnimplementedAuthenticateServiceServer
 }
 
 func NewAuthService(db *gorm.DB, rdb *redis.Client, vld *validator.Validator) AuthService {
@@ -29,7 +29,7 @@ func NewAuthService(db *gorm.DB, rdb *redis.Client, vld *validator.Validator) Au
 	}
 }
 
-func (a AuthService) CheckSession(ctx context.Context, req *auth.CheckSessionRequest) (*auth.CheckSessionResponse, error) {
+func (a AuthService) CheckSession(ctx context.Context, req *authpb.CheckSessionRequest) (*authpb.CheckSessionResponse, error) {
 	tokenStr := req.GetToken()
 
 	handler := service.NewAuthenticateHandler(
@@ -43,7 +43,7 @@ func (a AuthService) CheckSession(ctx context.Context, req *auth.CheckSessionReq
 		return nil, err
 	}
 
-	resp := auth.CheckSessionResponse{
+	resp := authpb.CheckSessionResponse{
 		UserId: result.UserID,
 	}
 

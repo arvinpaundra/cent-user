@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS sessions (
 	id BIGSERIAL PRIMARY KEY,
-	user_id BIGSERIAL NOT NULL,
+	user_id BIGINT NOT NULL,
 	access_token TEXT NOT NULL,
 	refresh_token TEXT,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
