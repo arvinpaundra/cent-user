@@ -9,8 +9,10 @@ import (
 type User struct {
 	ID        int64
 	Email     string
-	Password  null.String
 	Fullname  string
+	Balance   float64
+	Currency  string
+	Password  null.String
 	Image     null.String
 	Slug      null.String
 	CreatedAt time.Time

@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/arvinpaundra/cent/user/domain/auth/entity"
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
@@ -26,7 +25,7 @@ func (r OutboxWriterRepository) Save(ctx context.Context, outbox *entity.Outbox)
 		return r.insert(ctx, outbox)
 	}
 
-	return fmt.Errorf("unsupported database operation")
+	return nil
 }
 
 func (r OutboxWriterRepository) insert(ctx context.Context, outbox *entity.Outbox) error {

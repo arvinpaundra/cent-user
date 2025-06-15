@@ -2,11 +2,17 @@ package user
 
 import (
 	"context"
+	"errors"
 
+	"github.com/arvinpaundra/cent/user/domain/user/constant"
 	"github.com/arvinpaundra/cent/user/domain/user/entity"
+	"github.com/arvinpaundra/cent/user/domain/user/repository"
 	"github.com/arvinpaundra/cent/user/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
+
+var _ repository.UserReader = (*UserReaderRepository)(nil)
 
 type UserReaderRepository struct {
 	db *gorm.DB
@@ -34,6 +40,36 @@ func (r UserReaderRepository) FindBySlug(ctx context.Context, slug string) (*ent
 		Email:    userModel.Email,
 		Fullname: userModel.Fullname,
 		Image:    userModel.Image.Ptr(),
+	}
+
+	return &user, nil
+}
+
+func (r UserReaderRepository) FindUserByIdForUpdate(ctx context.Context, id int64) (*entity.User, error) {
+	var userModel model.User
+
+	err := r.db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		WithContext(ctx).
+		Model(&model.User{}).
+		Where("id = ?", id).
+		First(&userModel).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, constant.ErrUserNotFound
+		}
+
+		return nil, err
+	}
+
+	user := entity.User{
+		ID:       userModel.ID,
+		Email:    userModel.Email,
+		Fullname: userModel.Fullname,
+		Balance:  userModel.Balance,
+		Currency: userModel.Currency,
+		Slug:     userModel.Slug.Ptr(),
 	}
 
 	return &user, nil

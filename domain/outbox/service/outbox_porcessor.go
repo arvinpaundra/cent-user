@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
 
-	"github.com/arvinpaundra/cent/user/core/poller"
 	"github.com/arvinpaundra/cent/user/domain/outbox/constant"
 	"github.com/arvinpaundra/cent/user/domain/outbox/repository"
 )
@@ -33,10 +31,6 @@ func NewOutboxProcessorHandler(
 func (s OutboxProcessorHandler) Handle(ctx context.Context) error {
 	outbox, err := s.outboxReader.FindUnprocessed(ctx)
 	if err != nil {
-		if errors.Is(err, constant.ErrOutboxNotFound) {
-			return poller.ErrNoData
-		}
-
 		return err
 	}
 
