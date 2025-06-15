@@ -2,7 +2,6 @@ package outbox
 
 import (
 	"context"
-	"errors"
 
 	"github.com/arvinpaundra/cent/user/domain/outbox/entity"
 	"github.com/arvinpaundra/cent/user/domain/outbox/repository"
@@ -28,7 +27,7 @@ func (r OutboxWriterRepository) Save(ctx context.Context, outbox *entity.Outbox)
 		return r.update(ctx, outbox)
 	}
 
-	return errors.New("unsupported database operation")
+	return nil
 }
 
 func (r OutboxWriterRepository) insert(ctx context.Context, outbox *entity.Outbox) error {

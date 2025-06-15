@@ -2,9 +2,12 @@ package outbox
 
 import (
 	"context"
+	"errors"
 
+	"github.com/arvinpaundra/cent/user/core/poller"
+	"github.com/arvinpaundra/cent/user/domain/outbox/constant"
 	"github.com/arvinpaundra/cent/user/domain/outbox/service"
-	"github.com/arvinpaundra/cent/user/infrastructure/outbox"
+	outboxinfra "github.com/arvinpaundra/cent/user/infrastructure/outbox"
 	"github.com/nats-io/nats.go"
 	"gorm.io/gorm"
 )
@@ -23,14 +26,18 @@ func NewOutbox(db *gorm.DB, nc *nats.Conn) Outbox {
 
 func (o Outbox) OutboxProcessor() error {
 	handler := service.NewOutboxProcessorHandler(
-		outbox.NewOutboxReaderRepository(o.db),
-		outbox.NewOutboxWriterRepository(o.db),
-		outbox.NewUnitOfWork(o.db),
-		outbox.NewMessaging(o.nc),
+		outboxinfra.NewOutboxReaderRepository(o.db),
+		outboxinfra.NewOutboxWriterRepository(o.db),
+		outboxinfra.NewUnitOfWork(o.db),
+		outboxinfra.NewMessaging(o.nc),
 	)
 
 	err := handler.Handle(context.Background())
 	if err != nil {
+		if errors.Is(err, constant.ErrOutboxNotFound) {
+			return poller.ErrNoData
+		}
+
 		return err
 	}
 
