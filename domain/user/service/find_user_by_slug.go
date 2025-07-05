@@ -7,23 +7,23 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/user/repository"
 )
 
-type FindUserDetail struct {
+type FindUserBySlug struct {
 	userReader repository.UserReader
 }
 
-func NewFindUserDetail(userReader repository.UserReader) FindUserDetail {
-	return FindUserDetail{
+func NewFindUserBySlug(userReader repository.UserReader) FindUserBySlug {
+	return FindUserBySlug{
 		userReader: userReader,
 	}
 }
 
-func (s FindUserDetail) Exec(ctx context.Context, id int64) (userres.FindUserDetail, error) {
-	user, err := s.userReader.FindById(ctx, id)
+func (s FindUserBySlug) Exec(ctx context.Context, slug string) (userres.FindUserBySlug, error) {
+	user, err := s.userReader.FindBySlug(ctx, slug)
 	if err != nil {
-		return userres.FindUserDetail{}, nil
+		return userres.FindUserBySlug{}, err
 	}
 
-	res := userres.FindUserDetail{
+	res := userres.FindUserBySlug{
 		ID:       user.ID,
 		Email:    user.Email,
 		Fullname: user.Fullname,

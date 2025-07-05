@@ -35,7 +35,7 @@ func (m Authentication) Authenticate() gin.HandlerFunc {
 			return
 		}
 
-		handler := service.NewAuthenticateHandler(
+		svc := service.NewAuthenticate(
 			auth.NewUserReaderRepository(m.db),
 			auth.NewUserCacheRepository(m.rdb),
 			token.NewJWT(viper.GetString("JWT_SECRET")),
@@ -43,7 +43,7 @@ func (m Authentication) Authenticate() gin.HandlerFunc {
 
 		sanitizeToken := strings.Replace(bearerToken, "Bearer ", "", 1)
 
-		res, err := handler.Handle(c, sanitizeToken)
+		res, err := svc.Exec(c, sanitizeToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, format.Unauthorized("unauthenticated user"))
 			return
@@ -52,6 +52,5 @@ func (m Authentication) Authenticate() gin.HandlerFunc {
 		c.Set("session", res)
 
 		c.Next()
-
 	}
 }

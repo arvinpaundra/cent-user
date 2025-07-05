@@ -10,6 +10,7 @@ type User struct {
 	Fullname string
 	Balance  float64
 	Currency string
+	Key      string
 	Password *string
 	Slug     *string
 	Image    *string

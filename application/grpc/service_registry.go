@@ -1,8 +1,7 @@
 package grpc
 
 import (
-	authgrpc "github.com/arvinpaundra/cent/user/application/grpc/auth"
-	usergrpc "github.com/arvinpaundra/cent/user/application/grpc/user"
+	"github.com/arvinpaundra/cent/user/application/grpc/handler"
 	"github.com/arvinpaundra/cent/user/core/validator"
 	"github.com/arvinpaundra/centpb/gen/go/auth/v1"
 	"github.com/arvinpaundra/centpb/gen/go/user/v1"
@@ -12,6 +11,6 @@ import (
 )
 
 func Register(srv *grpc.Server, db *gorm.DB, rdb *redis.Client, vld *validator.Validator) {
-	auth.RegisterAuthenticateServiceServer(srv, authgrpc.NewAuthService(db, rdb, vld))
-	user.RegisterUserServiceServer(srv, usergrpc.NewUserService(db))
+	auth.RegisterAuthenticateServiceServer(srv, handler.NewAuthService(db, rdb, vld))
+	user.RegisterUserServiceServer(srv, handler.NewUserService(db))
 }

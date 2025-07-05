@@ -12,7 +12,7 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
 
-type RefreshTokenHandler struct {
+type RefreshToken struct {
 	userReader    repository.UserReader
 	sessionReader repository.SessionReader
 	sessionWriter repository.SessionWriter
@@ -21,15 +21,15 @@ type RefreshTokenHandler struct {
 	tokenable     token.Tokenable
 }
 
-func NewRefreshTokenHandler(
+func NewRefreshToken(
 	userReader repository.UserReader,
 	sessionReader repository.SessionReader,
 	sessionWriter repository.SessionWriter,
 	unitOfWork repository.UnitOfWork,
 	userCache repository.UserCache,
 	tokenable token.Tokenable,
-) RefreshTokenHandler {
-	return RefreshTokenHandler{
+) RefreshToken {
+	return RefreshToken{
 		userReader:    userReader,
 		sessionReader: sessionReader,
 		sessionWriter: sessionWriter,
@@ -39,7 +39,7 @@ func NewRefreshTokenHandler(
 	}
 }
 
-func (s RefreshTokenHandler) Handle(ctx context.Context, payload authcmd.RefreshToken) (authres.RefreshToken, error) {
+func (s RefreshToken) Exec(ctx context.Context, payload authcmd.RefreshToken) (authres.RefreshToken, error) {
 	claims, err := s.tokenable.Decode(payload.RefreshToken)
 	if err != nil {
 		return authres.RefreshToken{}, constant.ErrTokenInvalid

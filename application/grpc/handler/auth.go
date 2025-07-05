@@ -1,4 +1,4 @@
-package auth
+package handler
 
 import (
 	"context"
@@ -32,13 +32,13 @@ func NewAuthService(db *gorm.DB, rdb *redis.Client, vld *validator.Validator) Au
 func (a AuthService) CheckSession(ctx context.Context, req *authpb.CheckSessionRequest) (*authpb.CheckSessionResponse, error) {
 	tokenStr := req.GetToken()
 
-	handler := service.NewAuthenticateHandler(
+	svc := service.NewAuthenticate(
 		authinfra.NewUserReaderRepository(a.db),
 		authinfra.NewUserCacheRepository(a.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 
-	result, err := handler.Handle(ctx, tokenStr)
+	result, err := svc.Exec(ctx, tokenStr)
 	if err != nil {
 		return nil, err
 	}

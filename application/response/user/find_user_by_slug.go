@@ -1,6 +1,6 @@
 package user
 
-type FindUserDetail struct {
+type FindUserBySlug struct {
 	ID       int64   `json:"id"`
 	Email    string  `json:"email"`
 	Fullname string  `json:"fullname"`

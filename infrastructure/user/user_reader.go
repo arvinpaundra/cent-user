@@ -32,6 +32,10 @@ func (r UserReaderRepository) FindBySlug(ctx context.Context, slug string) (*ent
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, constant.ErrUserNotFound
+		}
+
 		return nil, err
 	}
 
@@ -39,13 +43,42 @@ func (r UserReaderRepository) FindBySlug(ctx context.Context, slug string) (*ent
 		ID:       userModel.ID,
 		Email:    userModel.Email,
 		Fullname: userModel.Fullname,
+		Key:      userModel.Key,
 		Image:    userModel.Image.Ptr(),
 	}
 
 	return &user, nil
 }
 
-func (r UserReaderRepository) FindUserByIdForUpdate(ctx context.Context, id int64) (*entity.User, error) {
+func (r UserReaderRepository) FindById(ctx context.Context, id int64) (*entity.User, error) {
+	var userModel model.User
+
+	err := r.db.WithContext(ctx).
+		Model(&model.User{}).
+		Where("id = ?", id).
+		First(&userModel).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, constant.ErrUserNotFound
+		}
+
+		return nil, err
+	}
+
+	user := entity.User{
+		ID:       userModel.ID,
+		Email:    userModel.Email,
+		Fullname: userModel.Fullname,
+		Key:      userModel.Key,
+		Image:    userModel.Image.Ptr(),
+	}
+
+	return &user, nil
+}
+
+func (r UserReaderRepository) FindByIdForUpdate(ctx context.Context, id int64) (*entity.User, error) {
 	var userModel model.User
 
 	err := r.db.Clauses(clause.Locking{Strength: "UPDATE"}).

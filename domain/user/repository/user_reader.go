@@ -8,5 +8,6 @@ import (
 
 type UserReader interface {
 	FindBySlug(ctx context.Context, slug string) (*entity.User, error)
-	FindUserByIdForUpdate(ctx context.Context, id int64) (*entity.User, error)
+	FindById(ctx context.Context, id int64) (*entity.User, error)
+	FindByIdForUpdate(ctx context.Context, id int64) (*entity.User, error)
 }

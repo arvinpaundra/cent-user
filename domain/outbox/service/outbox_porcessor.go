@@ -7,20 +7,20 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/outbox/repository"
 )
 
-type OutboxProcessorHandler struct {
+type OutboxProcessor struct {
 	outboxReader repository.OutboxReader
 	outboxWriter repository.OutboxWriter
 	unitOfWork   repository.UnitOfWork
 	messaging    repository.Messaging
 }
 
-func NewOutboxProcessorHandler(
+func NewOutboxProcessor(
 	outboxReader repository.OutboxReader,
 	outboxWriter repository.OutboxWriter,
 	unitOfWork repository.UnitOfWork,
 	messaging repository.Messaging,
-) OutboxProcessorHandler {
-	return OutboxProcessorHandler{
+) OutboxProcessor {
+	return OutboxProcessor{
 		outboxReader: outboxReader,
 		outboxWriter: outboxWriter,
 		unitOfWork:   unitOfWork,
@@ -28,7 +28,7 @@ func NewOutboxProcessorHandler(
 	}
 }
 
-func (s OutboxProcessorHandler) Handle(ctx context.Context) error {
+func (s OutboxProcessor) Exec(ctx context.Context) error {
 	outbox, err := s.outboxReader.FindUnprocessed(ctx)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (s OutboxProcessorHandler) Handle(ctx context.Context) error {
 	return nil
 }
 
-func (s OutboxProcessorHandler) topic(event constant.OutboxEvent) string {
+func (s OutboxProcessor) topic(event constant.OutboxEvent) string {
 	switch event {
 	case constant.OutboxEventUserRegistered:
 		return constant.EventUserCreated

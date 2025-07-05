@@ -3,10 +3,11 @@ module github.com/arvinpaundra/cent/user
 go 1.23.4
 
 require (
-	github.com/arvinpaundra/centpb v0.1.5
+	github.com/arvinpaundra/centpb v0.1.7
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/google/uuid v1.6.0
 	github.com/guregu/null/v6 v6.0.0
 	github.com/nats-io/nats.go v1.43.0
 	github.com/redis/go-redis/v9 v9.8.0
@@ -38,7 +39,6 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect

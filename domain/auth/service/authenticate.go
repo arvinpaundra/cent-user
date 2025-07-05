@@ -10,25 +10,25 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
 
-type AuthenticateHandler struct {
+type Authenticate struct {
 	userReader repository.UserReader
 	userCache  repository.UserCache
 	tokenable  token.Tokenable
 }
 
-func NewAuthenticateHandler(
+func NewAuthenticate(
 	userReader repository.UserReader,
 	userCache repository.UserCache,
 	tokenable token.Tokenable,
-) AuthenticateHandler {
-	return AuthenticateHandler{
+) Authenticate {
+	return Authenticate{
 		userReader: userReader,
 		userCache:  userCache,
 		tokenable:  tokenable,
 	}
 }
 
-func (s AuthenticateHandler) Handle(ctx context.Context, token string) (authres.UserAuthenticated, error) {
+func (s Authenticate) Exec(ctx context.Context, token string) (authres.UserAuthenticated, error) {
 	claims, err := s.tokenable.Decode(token)
 	if err != nil {
 		return authres.UserAuthenticated{}, err
