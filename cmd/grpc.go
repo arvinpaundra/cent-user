@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/arvinpaundra/cent/user/api/interceptor"
 	grpcapp "github.com/arvinpaundra/cent/user/application/grpc"
+	"github.com/arvinpaundra/cent/user/application/grpc/interceptor"
 	"github.com/arvinpaundra/cent/user/config"
 	"github.com/arvinpaundra/cent/user/core"
 	"github.com/arvinpaundra/cent/user/core/validator"

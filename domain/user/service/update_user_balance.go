@@ -7,31 +7,31 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/user/repository"
 )
 
-type UpdateUserBalanceHandler struct {
+type UpdateUserBalance struct {
 	userReader repository.UserReader
 	userWriter repository.UserWriter
 	uow        repository.UnitOfWork
 }
 
-func NewUpdateUserBalanceHandler(
+func NewUpdateUserBalance(
 	userReader repository.UserReader,
 	userWriter repository.UserWriter,
 	uow repository.UnitOfWork,
-) UpdateUserBalanceHandler {
-	return UpdateUserBalanceHandler{
+) UpdateUserBalance {
+	return UpdateUserBalance{
 		userReader: userReader,
 		userWriter: userWriter,
 		uow:        uow,
 	}
 }
 
-func (s UpdateUserBalanceHandler) Handle(ctx context.Context, command usercmd.UpdateUserBalance) error {
+func (s UpdateUserBalance) Exec(ctx context.Context, command usercmd.UpdateUserBalance) error {
 	tx, err := s.uow.Begin()
 	if err != nil {
 		return err
 	}
 
-	user, err := tx.UserReader().FindUserByIdForUpdate(ctx, command.UserId)
+	user, err := tx.UserReader().FindByIdForUpdate(ctx, command.UserId)
 	if err != nil {
 		if uowErr := tx.Rollback(); uowErr != nil {
 			return uowErr

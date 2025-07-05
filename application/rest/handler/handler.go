@@ -1,4 +1,4 @@
-package rest
+package handler
 
 import (
 	"github.com/arvinpaundra/cent/user/core/validator"
@@ -6,14 +6,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type Controller struct {
+type Handler struct {
 	db        *gorm.DB
 	rdb       *redis.Client
 	validator *validator.Validator
 }
 
-func NewController(db *gorm.DB, rdb *redis.Client, validator *validator.Validator) Controller {
-	return Controller{
+func NewHandler(db *gorm.DB, rdb *redis.Client, validator *validator.Validator) Handler {
+	return Handler{
 		db:        db,
 		rdb:       rdb,
 		validator: validator,

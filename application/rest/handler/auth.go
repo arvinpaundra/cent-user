@@ -1,4 +1,4 @@
-package rest
+package handler
 
 import (
 	"net/http"
@@ -13,25 +13,25 @@ import (
 	"github.com/spf13/viper"
 )
 
-func (cont Controller) Register(c *gin.Context) {
+func (h Handler) Register(c *gin.Context) {
 	var payload authcmd.Register
 
 	_ = c.ShouldBindJSON(&payload)
 
-	verrs := cont.validator.Validate(payload)
+	verrs := h.validator.Validate(payload)
 	if verrs != nil {
 		c.JSON(http.StatusBadRequest, format.BadRequest("invalid request body", verrs))
 		return
 	}
 
-	handler := service.NewRegisterHandler(
-		authinfra.NewUserReaderRepository(cont.db),
-		authinfra.NewUserWriterRepository(cont.db),
-		authinfra.NewOutboxWriterRepository(cont.db),
-		authinfra.NewUnitOfWork(cont.db),
+	svc := service.NewRegister(
+		authinfra.NewUserReaderRepository(h.db),
+		authinfra.NewUserWriterRepository(h.db),
+		authinfra.NewOutboxWriterRepository(h.db),
+		authinfra.NewUnitOfWork(h.db),
 	)
 
-	err := handler.Handle(c, payload)
+	err := svc.Exec(c, payload)
 	if err != nil {
 		switch err {
 		case constant.ErrEmailAlreadyTaken:
@@ -46,25 +46,25 @@ func (cont Controller) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, format.SuccessCreated("success register", nil))
 }
 
-func (cont Controller) Login(c *gin.Context) {
+func (h Handler) Login(c *gin.Context) {
 	var payload authcmd.Login
 
 	_ = c.ShouldBindJSON(&payload)
 
-	verrs := cont.validator.Validate(payload)
+	verrs := h.validator.Validate(payload)
 	if verrs != nil {
 		c.JSON(http.StatusBadRequest, format.BadRequest("invalid request body", verrs))
 		return
 	}
 
-	handler := service.NewLoginHandler(
-		authinfra.NewUserReaderRepository(cont.db),
-		authinfra.NewSessionWriterRepository(cont.db),
-		authinfra.NewUserCacheRepository(cont.rdb),
+	svc := service.NewLogin(
+		authinfra.NewUserReaderRepository(h.db),
+		authinfra.NewSessionWriterRepository(h.db),
+		authinfra.NewUserCacheRepository(h.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 
-	res, err := handler.Handle(c, payload)
+	res, err := svc.Exec(c, payload)
 	if err != nil {
 		switch err {
 		case constant.ErrUserNotFound, constant.ErrWrongEmailOrPassword:
@@ -79,27 +79,27 @@ func (cont Controller) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, format.SuccessOK("success login", res))
 }
 
-func (cont Controller) RefreshToken(c *gin.Context) {
+func (h Handler) RefreshToken(c *gin.Context) {
 	var payload authcmd.RefreshToken
 
 	_ = c.ShouldBindJSON(&payload)
 
-	verrs := cont.validator.Validate(payload)
+	verrs := h.validator.Validate(payload)
 	if verrs != nil {
 		c.JSON(http.StatusBadRequest, format.BadRequest("invalid request body", verrs))
 		return
 	}
 
-	handler := service.NewRefreshTokenHandler(
-		authinfra.NewUserReaderRepository(cont.db),
-		authinfra.NewSessionReaderRepository(cont.db),
-		authinfra.NewSessionWriterRepository(cont.db),
-		authinfra.NewUnitOfWork(cont.db),
-		authinfra.NewUserCacheRepository(cont.rdb),
+	svc := service.NewRefreshToken(
+		authinfra.NewUserReaderRepository(h.db),
+		authinfra.NewSessionReaderRepository(h.db),
+		authinfra.NewSessionWriterRepository(h.db),
+		authinfra.NewUnitOfWork(h.db),
+		authinfra.NewUserCacheRepository(h.rdb),
 		token.NewJWT(viper.GetString("JWT_SECRET")),
 	)
 
-	res, err := handler.Handle(c, payload)
+	res, err := svc.Exec(c, payload)
 	if err != nil {
 		switch err {
 		case constant.ErrUserNotFound, constant.ErrSessionNotFound, constant.ErrTokenInvalid:

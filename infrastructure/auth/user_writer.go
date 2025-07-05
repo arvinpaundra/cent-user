@@ -35,6 +35,7 @@ func (r UserWriterRepository) insert(ctx context.Context, user *entity.User) err
 		Email:    user.Email,
 		Password: null.StringFromPtr(user.Password),
 		Fullname: user.Fullname,
+		Key:      user.Key,
 	}
 
 	err := r.db.WithContext(ctx).

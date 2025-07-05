@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arvinpaundra/cent/user/api/route"
+	"github.com/arvinpaundra/cent/user/application/rest/router"
 	"github.com/arvinpaundra/cent/user/config"
 	"github.com/arvinpaundra/cent/user/core"
 	"github.com/arvinpaundra/cent/user/core/validator"
@@ -35,10 +35,7 @@ var restCmd = &cobra.Command{
 
 		g := gin.New()
 
-		_ = route.NewRoutes(g, sqlpkg.GetConnection(), nosqlpkg.GetInMemoryConnection(), validator.NewValidator()).
-			WithPublic().
-			WithPrivate().
-			WithInternal()
+		router.Register(g, sqlpkg.GetConnection(), nosqlpkg.GetInMemoryConnection(), validator.NewValidator())
 
 		srv := http.Server{
 			Addr:    fmt.Sprintf(":%s", port),

@@ -1,9 +1,11 @@
 package entity
 
 import (
+	"strings"
 	"time"
 
 	"github.com/arvinpaundra/cent/user/core/trait"
+	"github.com/google/uuid"
 	"github.com/sqids/sqids-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,6 +17,7 @@ type User struct {
 	Email     string     `json:"email" redis:"email"`
 	Password  *string    `json:"password" redis:"-"`
 	Fullname  string     `json:"fullname" redis:"-"`
+	Key       string     `json:"key" redis:"-"`
 	Slug      *string    `json:"slug" redis:"slug"`
 	Image     *string    `json:"image" redis:"-"`
 	DeletedAt *time.Time `json:"deleted_at" redis:"-"`
@@ -62,6 +65,19 @@ func (e *User) GenerateSlug() error {
 	}
 
 	e.Slug = &slug
+
+	return nil
+}
+
+func (e *User) GenerateKey() error {
+	key, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	sanitizedKey := strings.ReplaceAll(key.String(), "-", "")
+
+	e.Key = sanitizedKey
 
 	return nil
 }

@@ -10,20 +10,20 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
 
-type RegisterHandler struct {
+type Register struct {
 	userReader   repository.UserReader
 	userWriter   repository.UserWriter
 	outboxWriter repository.OutboxWriter
 	unitOfWork   repository.UnitOfWork
 }
 
-func NewRegisterHandler(
+func NewRegister(
 	userReader repository.UserReader,
 	userWriter repository.UserWriter,
 	outboxWriter repository.OutboxWriter,
 	unitOfWork repository.UnitOfWork,
-) RegisterHandler {
-	return RegisterHandler{
+) Register {
+	return Register{
 		userReader:   userReader,
 		userWriter:   userWriter,
 		outboxWriter: outboxWriter,
@@ -31,7 +31,7 @@ func NewRegisterHandler(
 	}
 }
 
-func (s RegisterHandler) Handle(ctx context.Context, payload authcmd.Register) error {
+func (s Register) Exec(ctx context.Context, payload authcmd.Register) error {
 	isExist, err := s.userReader.IsEmailExist(ctx, payload.Email)
 	if err != nil {
 		return err
@@ -47,6 +47,11 @@ func (s RegisterHandler) Handle(ctx context.Context, payload authcmd.Register) e
 	}
 
 	err = user.GeneratePassword(payload.Password)
+	if err != nil {
+		return err
+	}
+
+	err = user.GenerateKey()
 	if err != nil {
 		return err
 	}

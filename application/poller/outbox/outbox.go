@@ -25,14 +25,14 @@ func NewOutbox(db *gorm.DB, nc *nats.Conn) Outbox {
 }
 
 func (o Outbox) OutboxProcessor() error {
-	handler := service.NewOutboxProcessorHandler(
+	svc := service.NewOutboxProcessor(
 		outboxinfra.NewOutboxReaderRepository(o.db),
 		outboxinfra.NewOutboxWriterRepository(o.db),
 		outboxinfra.NewUnitOfWork(o.db),
 		outboxinfra.NewMessaging(o.nc),
 	)
 
-	err := handler.Handle(context.Background())
+	err := svc.Exec(context.Background())
 	if err != nil {
 		if errors.Is(err, constant.ErrOutboxNotFound) {
 			return poller.ErrNoData

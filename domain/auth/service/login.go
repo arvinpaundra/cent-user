@@ -12,20 +12,20 @@ import (
 	"github.com/arvinpaundra/cent/user/domain/auth/repository"
 )
 
-type LoginHandler struct {
+type Login struct {
 	userReader    repository.UserReader
 	sessionWriter repository.SessionWriter
 	userCache     repository.UserCache
 	tokenable     token.Tokenable
 }
 
-func NewLoginHandler(
+func NewLogin(
 	userReader repository.UserReader,
 	sessionWriter repository.SessionWriter,
 	userCache repository.UserCache,
 	tokenable token.Tokenable,
-) LoginHandler {
-	return LoginHandler{
+) Login {
+	return Login{
 		userReader:    userReader,
 		sessionWriter: sessionWriter,
 		userCache:     userCache,
@@ -33,7 +33,7 @@ func NewLoginHandler(
 	}
 }
 
-func (s LoginHandler) Handle(ctx context.Context, payload authcmd.Login) (authres.Login, error) {
+func (s Login) Exec(ctx context.Context, payload authcmd.Login) (authres.Login, error) {
 	user, err := s.userReader.FindByEmail(ctx, payload.Email)
 	if err != nil {
 		return authres.Login{}, err
